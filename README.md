@@ -1,0 +1,1 @@
+It is an AI-powered skin care app that scans skin images using a TensorFlow Lite model to detect conditions and suggest cures. The app also serves as a platform connecting patients with doctors, ensuring professional guidance whether or not the AI identifies an issue, streamlining both diagnosis and treatment access.
