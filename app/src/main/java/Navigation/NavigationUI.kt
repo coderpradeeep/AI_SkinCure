@@ -32,30 +32,44 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
 import com.example.aiskincure.ui.theme.BG
 import com.example.aiskincure.ui.theme.DarkBG
 import com.example.aiskincure.ui.theme.Darkpink
 import com.example.aiskincure.ui.theme.Orange
 import com.example.aiskincure.ui.theme.Pink
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.newCoroutineContext
+import kotlin.coroutines.CoroutineContext
 
 @Composable
 fun BottomNavigationBar(
     viewModel: ViewModel,
-    rootNavController: NavController,
+    navController: NavHostController,
     navBackStackEntry: NavBackStackEntry?
 ) {
+//    val context = LocalContext.current
+//    var scope = CoroutineScope(context as CoroutineContext)
+
     AnimatedVisibility(
-        visible = viewModel.isChatPage,
+        visible = (!viewModel.isScanpage && viewModel.isChatPage),
         label = "Bottom navigation bar",
-        enter = slideInVertically(),
-        exit = slideOutVertically()
+        enter = slideInVertically(
+            initialOffsetY = {it*2}
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = {it*2}
+        )
 
     ) {
         Row(
@@ -68,7 +82,7 @@ fun BottomNavigationBar(
                         if(isSystemInDarkTheme()) DarkBG else BG
                     ),
                     startY = 0f,
-                    endY = 70f
+                    endY = 40f
                     )
                 )
                 .padding(PaddingValues(vertical = 6.dp, horizontal = 4.dp))
@@ -79,8 +93,7 @@ fun BottomNavigationBar(
         ) {
             // Navigation buttons and Navigation control
             navItems.forEach { item ->
-                val isSelected = item.title.lowercase() ==
-                        navBackStackEntry?.destination?.route
+                val isSelected = item.title.lowercase() == navBackStackEntry?.destination?.route
 
                 if (!item.isAddButton) {
                     Column(
@@ -92,12 +105,12 @@ fun BottomNavigationBar(
 //                        .fillMaxWidth()
                             .height(50.dp)
                             .bouncyClickable(0.97f) {
-                                rootNavController.navigate(item.title.lowercase()) {
-                                    popUpTo(rootNavController.graph.findStartDestination().id) {
-                                        saveState = true
+                                viewModel.viewModelScope.launch {
+                                    navController.navigate(item.title.lowercase()) {
+
+                                        launchSingleTop = true
+                                        restoreState = true
                                     }
-                                    launchSingleTop = true
-                                    restoreState = true
                                 }
                             }
                     ) {
@@ -148,19 +161,18 @@ fun BottomNavigationBar(
                             .align(Alignment.CenterVertically)
                             .background(
                                 brush = Brush.linearGradient(
-                                    colors = if (isSelected) listOf(Pink, Orange)
-                                    else listOf(Pink, Darkpink)
+                                    colors = listOf(Pink, Darkpink)
                                 ),
                                 shape = CircleShape
                             ),
 
                         onClick = {
-                            rootNavController.navigate(item.title.lowercase()) {
-                                popUpTo(rootNavController.graph.findStartDestination().id) {
-                                    saveState = true
+                            viewModel.viewModelScope.launch {
+                                navController.navigate(item.title.lowercase()) {
+
+                                    launchSingleTop = true
+                                    restoreState = true
                                 }
-                                launchSingleTop = true
-                                restoreState = true
                             }
                         }
 

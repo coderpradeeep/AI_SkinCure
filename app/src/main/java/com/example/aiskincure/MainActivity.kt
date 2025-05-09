@@ -2,9 +2,12 @@ package com.example.aiskincure
 
 import Database.ViewModel
 import Navigation.BottomNavigationBar
-import Navigation.RootNavHost
+import Navigation.NavGraph
+import android.Manifest
 import android.annotation.SuppressLint
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -18,7 +21,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.aiskincure.ui.theme.AISkinCureTheme
@@ -27,6 +34,7 @@ import com.example.aiskincure.ui.theme.DarkBG
 
 class MainActivity : ComponentActivity() {
     lateinit var viewModel : ViewModel
+    lateinit var navController: NavHostController
 
     @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter", "NewApi")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,18 +42,28 @@ class MainActivity : ComponentActivity() {
 
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        if(!hasRequiredPermissions()) {
+            ActivityCompat.requestPermissions(
+                this, CAMERAX_PERMISSIONS, 0
+            )
+        } else {
+            viewModel.permissionGranted = true
+            Toast.makeText(applicationContext,"Permission Granted", Toast.LENGTH_SHORT).show()
+        }
+
         setContent {
             AISkinCureTheme {
-                val rootNavController = rememberNavController()
-                val navBackStackEntry by rootNavController.currentBackStackEntryAsState()
+                navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
 
                 Scaffold(
                     bottomBar = {
                         if(viewModel.isChatPage) {
                             BottomNavigationBar(
                                 viewModel,
-                                rootNavController = rootNavController,
-                                navBackStackEntry = navBackStackEntry
+                                navController,
+                                navBackStackEntry
                             )
                         }
                     },
@@ -59,9 +77,8 @@ class MainActivity : ComponentActivity() {
                                 color = if (isSystemInDarkTheme()) DarkBG else BG
                             )
                     ) {
-                        RootNavHost(
-                            rootNavController = rootNavController,
-                            startDestination = "home",
+                        NavGraph(
+                            navController,
                             viewModel
                         )
                     }
@@ -69,5 +86,20 @@ class MainActivity : ComponentActivity() {
 
             }
         }
+    }
+
+    fun hasRequiredPermissions() : Boolean {
+        return CAMERAX_PERMISSIONS.all {
+            ContextCompat.checkSelfPermission(
+                applicationContext,
+                it
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+    }
+
+    companion object {
+        private val CAMERAX_PERMISSIONS = arrayOf(
+            Manifest.permission.CAMERA
+        )
     }
 }

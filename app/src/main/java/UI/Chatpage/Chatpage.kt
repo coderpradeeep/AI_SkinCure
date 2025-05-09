@@ -1,6 +1,8 @@
 package UI.Chatpage
 
 import Database.ViewModel
+import UI.TopBar
+import android.annotation.SuppressLint
 import android.hardware.lights.Light
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
@@ -38,6 +40,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -57,6 +60,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavHostController
 import com.example.aiskincure.BuildConfig
 import com.example.aiskincure.ui.theme.BG
 import com.example.aiskincure.ui.theme.DarkBG
@@ -70,9 +74,11 @@ import kotlinx.coroutines.launch
 
 lateinit var generativeModel : GenerativeModel
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun Chatpage(
-    viewModel: ViewModel
+    viewModel: ViewModel,
+    navController: NavHostController,
 ) {
     val chatList by viewModel.chatList.observeAsState()
 
@@ -81,192 +87,198 @@ fun Chatpage(
             modelName = "gemini-1.5-flash",
             apiKey = BuildConfig.APIKEY
         )
-        if (viewModel.firstChat) {
-            viewModel.chatAI(generativeModel)
-        }
+        viewModel.startChat(generativeModel)
     }
 
-    Surface(
-        color = Color.Transparent,
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.Transparent)
+    Scaffold(
+        topBar = {
+            TopBar( viewModel, navController)
+        }
     ) {
-
-        // Chats
-        if (chatList == null) {
-            Text(
-                text = "Feel free to ask anything with your AI assistant",
-                color = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                fontWeight = FontWeight.Light,
-                letterSpacing = 0.sp,
-                lineHeight = 30.sp,
-                fontSize = 24.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier
-                    .padding(PaddingValues(24.dp))
-            )
-        }
-        else {
-            chatList?.let { chat ->
-                LazyColumn(
-                    horizontalAlignment = Alignment.Start,
-                    verticalArrangement = Arrangement.Bottom,
-                    state = LazyListState(
-                        firstVisibleItemIndex = chat.size,
-                    ),
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(Color.Transparent)
-                        .padding(horizontal = 16.dp)
-                        .navigationBarsPadding()
-                        .statusBarsPadding()
-                ) {
-                    // Spacer for TopappBar
-                    item {
-                        Spacer(Modifier.height(80.dp))
-                    }
-
-                    // Demo chat
-                    items(chat, key = { it.id }) { item ->
-                        if (item.isUser) {
-                            ChatUserShape(item.text)
-                        } else {
-                            ChatAIShape(item.text)
-                        }
-                    }
-
-                    // Spacer, Not padding bcoz it does not block the view
-                    item {
-                        Spacer(Modifier.height(100.dp))
-                    }
-
-                }
-            }
-        }
-
-        // TextField and Search Button on top of chats
-        Box(
+        Surface(
+            color = if (isSystemInDarkTheme()) DarkBG else BG,
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.Transparent)
-                .padding(PaddingValues(bottom = 4.dp))
+                .statusBarsPadding()
         ) {
-            Column(
-                verticalArrangement = Arrangement.SpaceBetween,
-                horizontalAlignment = Alignment.CenterHorizontally,
+            // Chats
+            if (chatList == null) {
+                Text(
+                    text = "Feel free to ask anything with your AI assistant",
+                    color = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                    fontWeight = FontWeight.Light,
+                    letterSpacing = 0.sp,
+                    lineHeight = 30.sp,
+                    fontSize = 24.sp,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(PaddingValues(24.dp))
+                )
+            } else {
+                chatList?.let { chat ->
+                    LazyColumn(
+                        horizontalAlignment = Alignment.Start,
+                        verticalArrangement = Arrangement.Bottom,
+                        state = LazyListState(
+                            firstVisibleItemIndex = chat.size,
+                        ),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(Color.Transparent)
+                            .animateContentSize()
+                            .padding(horizontal = 16.dp)
+                            .navigationBarsPadding()
+                            .statusBarsPadding()
+                    ) {
+                        // Spacer for TopappBar
+                        item {
+                            Spacer(Modifier.height(80.dp))
+                        }
+
+                        // Demo chat
+                        items(chat, key = { it.id }) { item ->
+                            if (item.isUser) {
+                                ChatUserShape(item.text)
+                            } else {
+                                ChatAIShape(item.text)
+                            }
+                        }
+
+                        // Spacer, Not padding bcoz it does not block the view
+                        item {
+                            Spacer(Modifier.height(100.dp))
+                        }
+
+                    }
+                }
+            }
+
+            // TextField and Search Button on top of chats
+            Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(Color.Transparent)
+                    .padding(PaddingValues(bottom = 4.dp))
             ) {
-                Spacer(
-                    Modifier
-                        .weight(1f)
-                        .background(Color.Transparent)
-                )
-
-                Row(
-                    verticalAlignment = Alignment.Bottom,
-                    horizontalArrangement = Arrangement.Absolute.SpaceBetween,
+                Column(
+                    verticalArrangement = Arrangement.SpaceBetween,
+                    horizontalAlignment = Alignment.CenterHorizontally,
                     modifier = Modifier
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = if (isSystemInDarkTheme()) listOf(Color.Transparent, DarkBG)
-                                else listOf(Color.Transparent, BG),
-                                startY = 0f,
-                                endY = 70f
-                            )
-                        )
-                        .padding(PaddingValues(vertical = 16.dp, horizontal = 16.dp))
+                        .fillMaxSize()
+                        .background(Color.Transparent)
                 ) {
-                    OutlinedTextField(
-                        colors = OutlinedTextFieldDefaults.colors(
-                            cursorColor = Pink,
-                            focusedTextColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            unfocusedTextColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            disabledTextColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            focusedContainerColor = Color.Transparent,
-                            unfocusedContainerColor = Color.Transparent,
-                            focusedBorderColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            disabledBorderColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            unfocusedBorderColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            unfocusedPlaceholderColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            focusedPlaceholderColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            disabledContainerColor = Color.Transparent,
-                            focusedLabelColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            unfocusedLabelColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            disabledLabelColor = if(isSystemInDarkTheme()) Color.LightGray else Color.Black
-                        ),
-                        enabled = viewModel.isUser,
-                        shape = CircleShape,
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Outlined.Edit,
-                                contentDescription = null,
-                                tint = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
-                            )
-                        },
-                        label = {
-                            Text(
-                                text = "Ask a Question",
-                                color = if(isSystemInDarkTheme()) Color.LightGray else Color.Black
-                            )
-                        },
-                        value = viewModel.enteredText,
-                        onValueChange = {
-                            viewModel.enteredText = it
-                        },
-                        maxLines = 2,
-                        textStyle = TextStyle(color = if(isSystemInDarkTheme()) Color.LightGray else Color.Black),
-                        keyboardOptions = KeyboardOptions(
-                            imeAction = ImeAction.Done,
-                            keyboardType = KeyboardType.Text
-                        ),
-                        keyboardActions = KeyboardActions(
-                            onDone = null
-                        ),
-                        modifier = Modifier
-                            .background(Color.Transparent)
+                    Spacer(
+                        Modifier
                             .weight(1f)
+                            .background(Color.Transparent)
                     )
 
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = Pink,
-                            contentColor = Color.White,
-                            disabledContainerColor = Pink,
-                            disabledContentColor = Color.White
-                        ),
-                        shape = CircleShape,
-                        enabled = viewModel.enteredText != "",
-                        onClick = {
-                            viewModel.viewModelScope.launch {
-                                viewModel.addChat(viewModel.enteredText)
-                                viewModel.prompt = viewModel.enteredText
-                                viewModel.chatAI(generativeModel)
-                                viewModel.enteredText = ""
-                            }
-                        },
-                        elevation = ButtonDefaults.buttonElevation(4.dp),
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                        horizontalArrangement = Arrangement.Absolute.SpaceBetween,
                         modifier = Modifier
-                            .height(IntrinsicSize.Min)
-                            .width(IntrinsicSize.Min)
-                            .padding(PaddingValues(start = 16.dp))
+                            .background(
+                                brush = Brush.verticalGradient(
+                                    colors = if (isSystemInDarkTheme()) listOf(
+                                        Color.Transparent,
+                                        DarkBG
+                                    )
+                                    else listOf(Color.Transparent, BG),
+                                    startY = 0f,
+                                    endY = 70f
+                                )
+                            )
+                            .padding(PaddingValues(vertical = 16.dp, horizontal = 16.dp))
                     ) {
-                        Icon(
-                            imageVector = Icons.Outlined.Send,
-                            contentDescription = null,
-                            //tint = if(isSystemInDarkTheme()) Color.LightGray else Color.White,
+                        OutlinedTextField(
+                            colors = OutlinedTextFieldDefaults.colors(
+                                cursorColor = Pink,
+                                focusedTextColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                unfocusedTextColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                disabledTextColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedBorderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                disabledBorderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                unfocusedBorderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                unfocusedPlaceholderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                focusedPlaceholderColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                disabledContainerColor = Color.Transparent,
+                                focusedLabelColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                unfocusedLabelColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                disabledLabelColor = if (isSystemInDarkTheme()) Color.LightGray else Color.Black
+                            ),
+                            enabled = viewModel.isUser,
+                            shape = CircleShape,
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Outlined.Edit,
+                                    contentDescription = null,
+                                    tint = if (isSystemInDarkTheme()) Color.LightGray else Color.Black,
+                                )
+                            },
+                            label = {
+                                Text(
+                                    text = "Ask a Question",
+                                    color = if (isSystemInDarkTheme()) Color.LightGray else Color.Black
+                                )
+                            },
+                            value = viewModel.enteredText,
+                            onValueChange = {
+                                viewModel.enteredText = it
+                            },
+                            maxLines = 2,
+                            textStyle = TextStyle(color = if (isSystemInDarkTheme()) Color.LightGray else Color.Black),
+                            keyboardOptions = KeyboardOptions(
+                                imeAction = ImeAction.Done,
+                                keyboardType = KeyboardType.Text
+                            ),
+                            keyboardActions = KeyboardActions(
+                                onDone = null
+                            ),
                             modifier = Modifier
-                                .scale(1.2f)
-                                .padding(PaddingValues(10.dp))
+                                .background(Color.Transparent)
+                                .weight(1f)
                         )
-                    }
 
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Pink,
+                                contentColor = Color.White,
+                                disabledContainerColor = Pink,
+                                disabledContentColor = Color.White
+                            ),
+                            shape = CircleShape,
+                            enabled = viewModel.enteredText != "",
+                            onClick = {
+                                viewModel.viewModelScope.launch {
+                                    viewModel.addChat(viewModel.enteredText)
+                                    viewModel.prompt = viewModel.enteredText
+                                    viewModel.chatAI(viewModel.prompt)
+                                    viewModel.enteredText = ""
+                                }
+                            },
+                            elevation = ButtonDefaults.buttonElevation(4.dp),
+                            modifier = Modifier
+                                .height(IntrinsicSize.Min)
+                                .width(IntrinsicSize.Min)
+                                .padding(PaddingValues(start = 16.dp))
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.Send,
+                                contentDescription = null,
+                                //tint = if(isSystemInDarkTheme()) Color.LightGray else Color.White,
+                                modifier = Modifier
+                                    .scale(1.2f)
+                                    .padding(PaddingValues(10.dp))
+                            )
+                        }
+
+                    }
                 }
             }
-        }
 
+        }
     }
 }
 
