@@ -78,7 +78,7 @@ fun TopBar(
                     initialOffsetX = {it}
                 ),
                 exit = fadeOut() + slideOutHorizontally(
-                    targetOffsetX = {it}
+                    targetOffsetX = {-it}
                 )
 
             ) {
