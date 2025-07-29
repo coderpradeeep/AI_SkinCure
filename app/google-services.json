@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "145887212072",
+    "project_id": "ai-skincure",
+    "storage_bucket": "ai-skincure.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:145887212072:android:0cb1d89ddff41da73abb1d",
+        "android_client_info": {
+          "package_name": "com.protonob.aiskincure"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCzJSOP36atol4HriNyCwmgQIIUpVektP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

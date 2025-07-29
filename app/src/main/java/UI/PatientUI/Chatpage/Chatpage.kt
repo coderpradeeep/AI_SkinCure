@@ -1,9 +1,9 @@
-package UI.Chatpage
+package UI.PatientUI.Chatpage
 
 import Database.ViewModel
-import UI.TopBar
+import UI.Common.TopBar
+import UI.PatientUI.ConsultantPage.Consultantpage
 import android.annotation.SuppressLint
-import android.hardware.lights.Light
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -37,6 +37,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -44,9 +45,11 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -61,6 +64,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.composable
 import com.example.aiskincure.BuildConfig
 import com.example.aiskincure.ui.theme.BG
 import com.example.aiskincure.ui.theme.DarkBG
@@ -80,14 +84,23 @@ fun Chatpage(
     viewModel: ViewModel,
     navController: NavHostController,
 ) {
+    val scope = rememberCoroutineScope()
+
     val chatList by viewModel.chatList.observeAsState()
 
     LaunchedEffect(Unit) {
+        viewModel.isChatPage = true
+
         generativeModel = GenerativeModel(
             modelName = "gemini-1.5-flash",
             apiKey = BuildConfig.APIKEY
         )
         viewModel.startChat(generativeModel)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.isChatPage = false
+        }
     }
 
     Scaffold(
@@ -129,6 +142,7 @@ fun Chatpage(
                             .padding(horizontal = 16.dp)
                             .navigationBarsPadding()
                             .statusBarsPadding()
+                            .animateContentSize()
                     ) {
                         // Spacer for TopappBar
                         item {
@@ -278,6 +292,22 @@ fun Chatpage(
                 }
             }
 
+            if(viewModel.isLoading) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .background(if(isSystemInDarkTheme()) Color.Black.copy(alpha = 0.5f) else Color.White.copy(alpha = 0.5f))
+                ) {
+                    CircularProgressIndicator(
+                        color = Pink,
+                        strokeWidth = 5.dp,
+                        trackColor = Color.Transparent,
+                        modifier = Modifier
+                            .scale(0.7f)
+                    )
+                }
+            }
+
         }
     }
 }
@@ -308,7 +338,6 @@ private fun ChatUserShape(
         ) {
             Text(
                 text = text,
-                //color = if(isSystemInDarkTheme()) Color.LightGray else Color.Black,
                 fontWeight = FontWeight.Normal,
                 letterSpacing = 0.sp,
                 lineHeight = 20.sp,

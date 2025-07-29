@@ -3,11 +3,11 @@ package Database.DataType
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity
+@Entity(tableName = "ChatDataType")
 data class ChatDataType(
 
     @PrimaryKey(autoGenerate = true)
-    var id: Int = 0,
-    var isUser: Boolean,
-    var text: String
+    val id: Int = 0,
+    val isUser: Boolean,
+    val text: String
 )

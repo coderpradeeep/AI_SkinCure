@@ -1,15 +1,14 @@
-package UI.ConsultantPage
+package UI.PatientUI.ConsultantPage
 
 import Database.DataType.ConsultantDataType
 import Database.ViewModel
-import UI.TopBar
-import UI.bouncyClickable
+import UI.Common.TopBar
+import UI.Common.bouncyClickable
 import com.example.aiskincure.R
 import android.annotation.SuppressLint
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,27 +27,22 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.Message
-import androidx.compose.material.icons.filled.Message
-import androidx.compose.material.icons.rounded.Message
 import androidx.compose.material.icons.rounded.Whatsapp
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -61,22 +55,22 @@ import com.example.aiskincure.ui.theme.BG
 import com.example.aiskincure.ui.theme.DarkBG
 import com.example.aiskincure.ui.theme.Darkcontainer
 import com.example.aiskincure.ui.theme.Lightcontainer
-import com.example.aiskincure.ui.theme.Lightpink
-import com.example.aiskincure.ui.theme.Orange
 import com.example.aiskincure.ui.theme.Pink
 
 val consultants = listOf(
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
-    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.ic_launcher_background),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+    ConsultantDataType("Sehgal", "Skin cancer expert", R.drawable.default_profile2),
+
 )
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -85,9 +79,14 @@ fun Consultantpage(
     viewModel: ViewModel,
     navController: NavHostController
 ) {
+
     LaunchedEffect(Unit) {
-        viewModel.isHomePage = false
-        viewModel.isScanpage = false
+        viewModel.isConsultantPage = true
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            viewModel.isConsultantPage = false
+        }
     }
 
     Scaffold(
@@ -160,16 +159,15 @@ fun ConsultansCard(
                 Card(
                     shape = CircleShape,
                     modifier = Modifier
-                        .size(50.dp)
+                        .size(45.dp)
                         .background(Color.Transparent)
                         //.padding(PaddingValues(8.dp))
                 ) {
                     Image(
                         painter = painterResource(id = consultant.image),
                         contentDescription = null,
-//                        modifier = Modifier
-//                            .fillMaxSize(),
-                        contentScale = ContentScale.FillBounds
+                        contentScale = ContentScale.FillBounds,
+                        alpha = 0.8f
                     )
                 }
                 Column(
